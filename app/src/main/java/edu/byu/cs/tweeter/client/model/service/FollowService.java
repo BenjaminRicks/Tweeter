@@ -1,38 +1,26 @@
 package edu.byu.cs.tweeter.client.model.service;
 
-import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Pair;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.JobIntentService;
 
 import java.util.List;
-import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import edu.byu.cs.client.R;
-import edu.byu.cs.tweeter.client.backgroundTask.FollowTask;
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
-import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
-import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
-import edu.byu.cs.tweeter.client.backgroundTask.LogoutTask;
-import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.client.presenter.FollowingPresenter;
-import edu.byu.cs.tweeter.client.view.main.MainActivity;
-import edu.byu.cs.tweeter.client.view.main.following.FollowingFragment;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.FollowTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFollowersCountTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFollowersTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFollowingCountTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFollowingTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetUserTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.IsFollowerTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.PagedTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.UnfollowTask;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.Follow;
 import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.util.FakeData;
 
 public class FollowService {
 
@@ -175,7 +163,7 @@ public class FollowService {
         public void handleMessage(@NonNull Message msg) {
             boolean success = msg.getData().getBoolean(GetFollowingTask.SUCCESS_KEY);
             if (success) {
-                List<User> followees = (List<User>) msg.getData().getSerializable(GetFollowingTask.FOLLOWEES_KEY);
+                List<User> followees = (List<User>) msg.getData().getSerializable(GetFollowingTask.ITEMS_KEY);
                 boolean hasMorePages = msg.getData().getBoolean(GetFollowingTask.MORE_PAGES_KEY);
                 observer.handleGetFollowingSuccess(followees, hasMorePages);
             } else if (msg.getData().containsKey(GetFollowingTask.MESSAGE_KEY)) {
@@ -199,7 +187,7 @@ public class FollowService {
 
             boolean success = msg.getData().getBoolean(GetFollowersTask.SUCCESS_KEY);
             if (success) {
-                List<User> followers = (List<User>) msg.getData().getSerializable(GetFollowersTask.FOLLOWERS_KEY);
+                List<User> followers = (List<User>) msg.getData().getSerializable(GetFollowersTask.ITEMS_KEY);
                 boolean hasMorePages = msg.getData().getBoolean(GetFollowersTask.MORE_PAGES_KEY);
 
                 observer.handleGetFollowersSuccess(followers, hasMorePages);
