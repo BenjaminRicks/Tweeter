@@ -8,37 +8,37 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowingPresenter extends PagedPresenter<User> {
 
-    private class FollowingObserver implements FollowService.FollowsObserver {
-
-        @Override
-        public void handleSuccess(List<User> followPeople, boolean hasMorePages) {
-            setData(followPeople);
-
-            view.setLoading(false);
-            view.addItems(followPeople);
-            setLoading(false);
-        }
-
-        @Override
-        public void handleFailure(String message) {
-            view.setLoading(false);
-            displayFailMessage(message);
-            setLoading(false);
-
-        }
-
-        @Override
-        public void handleException(Exception ex) {
-            view.setLoading(false);
-            displayErrorMessage(ex);
-            setLoading(false);
-        }
-    }
-
-    public void setData(List<User> followees) {
-        lastItem = (followees.size() > 0) ? followees.get(followees.size() - 1) : null;
-        setHasMorePages(hasMorePages);
-    }
+//    private class FollowingObserver implements FollowService.FollowsObserver {
+//
+//        @Override
+//        public void handleSuccess(List<User> followPeople, boolean hasMorePages) {
+//            setData(followPeople);
+//
+//            view.setLoading(false);
+//            view.addItems(followPeople);
+//            setLoading(false);
+//        }
+//
+//        @Override
+//        public void handleFailure(String message) {
+//            view.setLoading(false);
+//            displayFailMessage(message);
+//            setLoading(false);
+//
+//        }
+//
+//        @Override
+//        public void handleException(Exception ex) {
+//            view.setLoading(false);
+//            displayErrorMessage(ex);
+//            setLoading(false);
+//        }
+//    }
+//
+//    public void setData(List<User> followees) {
+//        lastItem = (followees.size() > 0) ? followees.get(followees.size() - 1) : null;
+//        setHasMorePages(hasMorePages);
+//    }
 
 
 
@@ -52,7 +52,7 @@ public class FollowingPresenter extends PagedPresenter<User> {
     }
 
     public void getItems(AuthToken authToken, User targetUser, int limit, User lastItem) {
-        getService().getFollowees(authToken, targetUser, limit, lastItem, new FollowingObserver());
+        getService().getFollowees(authToken, targetUser, limit, lastItem, new PagedObserver());
     }
 
     @Override

@@ -17,11 +17,6 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class StatusService extends ServiceBase {
 
-
-    public interface StatusObserver extends ServiceObserver {
-        void handleSuccess(List<Status> statuses, boolean hasMorePages);
-    }
-
     public interface PostStatusObserver extends ServiceObserver {
         void handleSuccess();
     }
@@ -31,34 +26,19 @@ public class StatusService extends ServiceBase {
         BackgroundTaskUtils.runTask(getUserTask);
     }
 
-    public void getFeed(AuthToken authToken, User user, int limit, Status status, StatusObserver observer) {
-        GetFeedTask getFeedTask = new GetFeedTask(authToken, user, limit, status, new StatusHandler(observer));
+    public void getFeed(AuthToken authToken, User user, int limit, Status status, PagedObserver observer) {
+        GetFeedTask getFeedTask = new GetFeedTask(authToken, user, limit, status, new PagedHandler(observer));
         BackgroundTaskUtils.runTask(getFeedTask);
     }
 
-    public void getStory(AuthToken authToken, User user, int limit, Status status, StatusObserver observer) {
-        GetStoryTask getStoryTask = new GetStoryTask(authToken, user, limit, status, new StatusHandler(observer));
+    public void getStory(AuthToken authToken, User user, int limit, Status status, PagedObserver observer) {
+        GetStoryTask getStoryTask = new GetStoryTask(authToken, user, limit, status, new PagedHandler(observer));
         BackgroundTaskUtils.runTask(getStoryTask);
     }
 
     public void getPostStatus(AuthToken authToken, Status status, PostStatusObserver observer) {
         PostStatusTask statusTask = new PostStatusTask(authToken, status, new PostStatusHandler(observer));
         BackgroundTaskUtils.runTask(statusTask);
-    }
-
-
-    private class StatusHandler extends BackgroundTaskHandler<StatusObserver> {
-
-        public StatusHandler(StatusObserver observer) {
-            super(observer);
-        }
-
-        @Override
-        protected void handleSuccessMessage(StatusObserver observer, Bundle data) {
-            List<Status> statuses = (List<Status>) data.getSerializable(GetFeedTask.ITEMS_KEY);
-            boolean hasMorePages = data.getBoolean(GetFeedTask.MORE_PAGES_KEY);
-            observer.handleSuccess(statuses, hasMorePages);
-        }
     }
 
 

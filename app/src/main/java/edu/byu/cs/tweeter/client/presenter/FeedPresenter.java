@@ -17,40 +17,14 @@ public class FeedPresenter extends PagedPresenter<Status> {
         this.authToken = authToken;
     }
 
-    private class FeedObserver implements StatusService.StatusObserver {
-
-        @Override
-        public void handleSuccess(List<Status> statuses, boolean hasMorePages) {
-            setData(statuses);
-
-            view.setLoading(false);
-            view.addItems(statuses);
-            setLoading(false);
-        }
-
-        @Override
-        public void handleFailure(String message) {
-            view.setLoading(false);
-            displayFailMessage(message);
-            setLoading(false);
-
-        }
-
-        @Override
-        public void handleException(Exception ex) {
-            view.setLoading(false);
-            displayErrorMessage(ex);
-            setLoading(false);
-        }
-    }
-
-    public void setData(List<Status> statuses) {
-        lastItem = (statuses.size() > 0) ? statuses.get(statuses.size() - 1) : null;
-        setHasMorePages(hasMorePages);
-    }
+//    @Override
+//    public void setData(List<Status> statuses) {
+//        lastItem = (statuses.size() > 0) ? statuses.get(statuses.size() - 1) : null;
+//        setHasMorePages(hasMorePages);
+//    }
 
     public void getItems(AuthToken authToken, User targetUser, int limit, Status lastItem) {
-        getService().getFeed(authToken, targetUser, limit, lastItem, new FeedObserver());
+        getService().getFeed(authToken, targetUser, limit, lastItem, new PagedObserver());
     }
 
     @Override

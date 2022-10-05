@@ -17,36 +17,36 @@ public class FollowersPresenter extends PagedPresenter<User> {
         this.authToken = authToken;
     }
 
-    private class FollowersObserver implements FollowService.FollowsObserver {
-
-        @Override
-        public void handleSuccess(List<User> followPeople, boolean hasMorePages) {
-            setData(followPeople);
-
-            view.setLoading(false);
-            view.addItems(followPeople);
-            setLoading(false);
-        }
-
-        @Override
-        public void handleFailure(String message) {
-            view.setLoading(false);
-            displayFailMessage(message);
-            setLoading(false);
-
-        }
-
-        @Override
-        public void handleException(Exception ex) {
-            view.setLoading(false);
-            displayErrorMessage(ex);
-            setLoading(false);
-        }
-    }
+//    private class FollowersObserver implements FollowService.FollowsObserver {
+//
+//        @Override
+//        public void handleSuccess(List<User> followPeople, boolean hasMorePages) {
+//            setData(followPeople);
+//
+//            view.setLoading(false);
+//            view.addItems(followPeople);
+//            setLoading(false);
+//        }
+//
+//        @Override
+//        public void handleFailure(String message) {
+//            view.setLoading(false);
+//            displayFailMessage(message);
+//            setLoading(false);
+//
+//        }
+//
+//        @Override
+//        public void handleException(Exception ex) {
+//            view.setLoading(false);
+//            displayErrorMessage(ex);
+//            setLoading(false);
+//        }
+//    }
 
     @Override
     protected void getItems(AuthToken authToken, User user, int pageSize, User lastItem) {
-        getService().getFollowers(authToken, user, pageSize, lastItem, new FollowersObserver());
+        getService().getFollowers(authToken, user, pageSize, lastItem, new PagedObserver());
     }
 
     @Override
@@ -55,10 +55,10 @@ public class FollowersPresenter extends PagedPresenter<User> {
     }
 
 
-    public void setData(List<User> followers) {
-        lastItem = (followers.size() > 0) ? followers.get(followers.size() - 1) : null;
-        setHasMorePages(hasMorePages);
-    }
+//    public void setData(List<User> followers) {
+//        lastItem = (followers.size() > 0) ? followers.get(followers.size() - 1) : null;
+//        setHasMorePages(hasMorePages);
+//    }
 
     @Override
     protected FollowService getService() {

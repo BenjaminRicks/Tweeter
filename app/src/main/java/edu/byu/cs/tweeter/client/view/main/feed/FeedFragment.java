@@ -153,7 +153,6 @@ public class FeedFragment extends Fragment implements FeedPresenter.FeedView {
                 @Override
                 public void onClick(View view) {
                     presenter.getUser(Cache.getInstance().getCurrUserAuthToken(), userAlias.getText().toString());
-                    Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
                 }
             });
         }

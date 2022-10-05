@@ -1,5 +1,7 @@
 package edu.byu.cs.tweeter.client.presenter;
 
+import android.widget.Toast;
+
 import java.util.List;
 
 import edu.byu.cs.tweeter.client.model.service.ServiceBase;
@@ -8,7 +10,7 @@ import edu.byu.cs.tweeter.client.model.service.observer.ServiceObserver;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public abstract class PagedPresenter<T> extends Presenter implements ServiceObserver {
+public abstract class PagedPresenter<T> extends Presenter {
 
     protected final int PAGE_SIZE = 10;
     protected User targetUser;
@@ -25,21 +27,36 @@ public abstract class PagedPresenter<T> extends Presenter implements ServiceObse
         void navigateToUser(User user);
     }
 
+    protected class PagedObserver implements ServiceBase.PagedObserver {
 
-    @Override
-    public void handleFailure(String message) {
-        view.setLoading(false);
-        displayFailMessage(message);
-        setLoading(false);
+        @Override
+        public void handleFailure(String message) {
+            view.setLoading(false);
+            displayFailMessage(message);
+            setLoading(false);
 
+        }
+
+        @Override
+        public void handleException(Exception ex) {
+            view.setLoading(false);
+            displayErrorMessage(ex);
+            setLoading(false);
+        }
+
+        @Override
+        public void handleSuccess(List<?> items, boolean hasMorePages) {
+            lastItem = (items.size() > 0) ? (T) items.get(items.size() - 1) : null;
+            setHasMorePages(hasMorePages);
+
+            view.setLoading(false);
+            view.addItems((List<T>)items);
+            setLoading(false);
+        }
     }
 
-    @Override
-    public void handleException(Exception ex) {
-        view.setLoading(false);
-        displayErrorMessage(ex);
-        setLoading(false);
-    }
+//    public abstract void setData(List<T> items);
+
 
     public void displayFailMessage(String message) {
         view.displayErrorMessage("Failed to get " + getDescription() + ": " + message);
@@ -88,7 +105,8 @@ public abstract class PagedPresenter<T> extends Presenter implements ServiceObse
     }
 
     public void getUser(AuthToken authToken, String alias) {
-        new UserService().getUser(authToken, alias, new GetUserObserver());
+        view.displayInfoMessage("Getting user's profile...");
+        getService().getUser(authToken, alias, new GetUserObserver());
     }
 
     protected void setLoading(boolean isLoading) {

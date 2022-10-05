@@ -20,14 +20,6 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowService extends ServiceBase {
 
-    public interface FollowsObserver extends ServiceObserver {
-        void handleSuccess(List<User> followPeople, boolean hasMorePages);
-    }
-
-    public interface UnfollowObserver extends ServiceObserver {
-        void handleSuccess();
-    }
-
     public interface FollowObserver extends ServiceObserver {
         void handleSuccess(boolean updateButton);
     }
@@ -43,13 +35,13 @@ public class FollowService extends ServiceBase {
 
     public FollowService(){}
 
-    public void getFollowees(AuthToken authToken, User targetUser, int limit, User lastFollowee, FollowsObserver observer) {
-        GetFollowingTask followingTask = new GetFollowingTask(authToken, targetUser, limit, lastFollowee, new FollowsHandler(observer));
+    public void getFollowees(AuthToken authToken, User targetUser, int limit, User lastFollowee, PagedObserver observer) {
+        GetFollowingTask followingTask = new GetFollowingTask(authToken, targetUser, limit, lastFollowee, new PagedHandler(observer));
         BackgroundTaskUtils.runTask(followingTask);
     }
 
-    public void getFollowers(AuthToken authToken, User targetUser, int limit, User lastFollower, FollowsObserver observer) {
-        GetFollowersTask followersTask = new GetFollowersTask(authToken, targetUser, limit, lastFollower, new FollowsHandler(observer));
+    public void getFollowers(AuthToken authToken, User targetUser, int limit, User lastFollower, PagedObserver observer) {
+        GetFollowersTask followersTask = new GetFollowersTask(authToken, targetUser, limit, lastFollower, new PagedHandler(observer));
         BackgroundTaskUtils.runTask(followersTask);
     }
 
@@ -82,21 +74,6 @@ public class FollowService extends ServiceBase {
     public void isFollower(AuthToken authToken, User user, User selectedUser, IsFollowerObserver observer) {
         IsFollowerTask isFollowerTask = new IsFollowerTask(authToken, user, selectedUser, new IsFollowerHandler(observer));
         BackgroundTaskUtils.runTask(isFollowerTask);
-    }
-
-
-    private class FollowsHandler extends BackgroundTaskHandler<FollowsObserver> {
-
-        public FollowsHandler(FollowsObserver observer) {
-            super(observer);
-        }
-
-        @Override
-        protected void handleSuccessMessage(FollowsObserver observer, Bundle data) {
-            List<User> followPeeps = (List<User>) data.getSerializable(GetFollowingTask.ITEMS_KEY);
-            boolean hasMorePages = data.getBoolean(GetFollowingTask.MORE_PAGES_KEY);
-            observer.handleSuccess(followPeeps, hasMorePages);
-        }
     }
 
 

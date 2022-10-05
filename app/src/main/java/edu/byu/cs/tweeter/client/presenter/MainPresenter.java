@@ -68,6 +68,7 @@ public class MainPresenter {
 
         @Override
         public void handleSuccess() {
+            view.displayInfoMessage("Logging out...");
             view.cancelLogOutToast();
             view.logoutUser();
         }
@@ -109,7 +110,6 @@ public class MainPresenter {
     public interface MainView extends View {
         void cancelPostToast();
         void setPostToast(String message);
-
 
         void updateFollowButton(boolean removed);
         void updateSelectedUserFollowingAndFollowers();

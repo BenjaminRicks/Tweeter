@@ -110,12 +110,11 @@ public class FollowingFragment extends Fragment implements FollowingPresenter.Fo
     @Override
     public void displayErrorMessage(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-
     }
 
     @Override
     public void displayInfoMessage(String message) {
-
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -144,7 +143,6 @@ public class FollowingFragment extends Fragment implements FollowingPresenter.Fo
                 @Override
                 public void onClick(View view) {
                     presenter.getUser(Cache.getInstance().getCurrUserAuthToken(), userAlias.getText().toString());
-                    Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
                 }
             });
         }
