@@ -6,114 +6,63 @@ import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class FollowersPresenter implements FollowService.FollowersObserver, FollowService.GetUserObserver {
+public class FollowersPresenter extends PagedPresenter<User> {
 
-    private final int PAGE_SIZE = 10;
-    private boolean isLoading = false;
-    private boolean hasMorePages;
-    private User user;
-    private AuthToken authToken;
+    public interface FollowersView extends PagedView<User> {}
 
-    private User lastFollower;
-
-    @Override
-    public void handleGetUserSuccess(User user) {
-        view.navigateToUser(user);
-        view.displayInfoMessage("Getting user's profile");
-    }
-
-    @Override
-    public void handleGetUserFailure(String message) {
-        view.displayErrorMessage("Failed to get user's profile: " + message);
-    }
-
-    @Override
-    public void handleGetUserThrewException(Exception ex) {
-        view.displayErrorMessage("Failed to get user's profile because of exception: " + ex);
-    }
-
-    public interface FollowersView {
-        void displayErrorMessage(String message);
-        void displayInfoMessage(String message);
-
-        void navigateToUser(User user);
-
-        void setLoading(boolean isLoading);
-        void addItems(List<User> followers);
-    }
-
-    private FollowersView view;
 
     public FollowersPresenter(FollowersView view, User user, AuthToken authToken) {
         this.view = view;
-        this.user = user;
+        this.targetUser = user;
         this.authToken = authToken;
     }
 
-    @Override
-    public void handleGetFollowersSuccess(List<User> followers, boolean hasMorePages) {
-        lastFollower = (followers.size() > 0) ? followers.get(followers.size() - 1) : null;
-        setHasMorePages(hasMorePages);
+    private class FollowersObserver implements FollowService.FollowsObserver {
 
-        view.setLoading(false);
-        view.addItems(followers);
-        setLoading(false);
-    }
+        @Override
+        public void handleSuccess(List<User> followPeople, boolean hasMorePages) {
+            setData(followPeople);
 
-    @Override
-    public void handleGetFollowersFailure(String message) {
-        view.setLoading(false);
-        view.displayErrorMessage("Failed to get followers: " + message);
-        setLoading(false);
+            view.setLoading(false);
+            view.addItems(followPeople);
+            setLoading(false);
+        }
 
-    }
+        @Override
+        public void handleFailure(String message) {
+            view.setLoading(false);
+            displayFailMessage(message);
+            setLoading(false);
 
-    @Override
-    public void handleGetFollowersException(Exception ex) {
-        view.setLoading(false);
-        view.displayErrorMessage("Failed to get followers because of exception: " + ex);
-        setLoading(false);
-    }
+        }
 
-
-    private void setLoading(boolean isLoading) {
-        this.isLoading = isLoading;
-    }
-
-    public boolean isLoading() {
-        return isLoading;
-    }
-
-    private void setHasMorePages(boolean hasMorePages) {
-        this.hasMorePages = hasMorePages;
-    }
-
-    public boolean isHasMorePages() {
-        return hasMorePages;
-    }
-
-    public User getLastFollower() {
-        return lastFollower;
-    }
-
-    public void loadMoreItems() {
-        if (!isLoading) {   // This guard is important for avoiding a race condition in the scrolling code.
-            setLoading(true);
-            view.setLoading(true);
-            getFollowers(authToken, user, PAGE_SIZE, lastFollower);
+        @Override
+        public void handleException(Exception ex) {
+            view.setLoading(false);
+            displayErrorMessage(ex);
+            setLoading(false);
         }
     }
 
-    public void getUser(AuthToken authToken, String alias) {
-        new FollowService().getUser(authToken, alias, this);
+    @Override
+    protected void getItems(AuthToken authToken, User user, int pageSize, User lastItem) {
+        getService().getFollowers(authToken, user, pageSize, lastItem, new FollowersObserver());
+    }
+
+    @Override
+    protected String getDescription() {
+        return "followers";
     }
 
 
-    public void getFollowers(AuthToken authToken, User user, int limit, User lastFollower) {
-        getFollowerService().getFollowers(authToken, user, limit, lastFollower, this);
+    public void setData(List<User> followers) {
+        lastItem = (followers.size() > 0) ? followers.get(followers.size() - 1) : null;
+        setHasMorePages(hasMorePages);
     }
 
-    public FollowService getFollowerService() {
+    @Override
+    protected FollowService getService() {
         return new FollowService();
     }
+
 }

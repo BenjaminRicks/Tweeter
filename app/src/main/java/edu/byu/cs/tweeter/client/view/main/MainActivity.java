@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
             presenter.getPostStatus(authToken, newStatus);
         } catch (Exception ex) {
             Log.e(LOG_TAG, ex.getMessage(), ex);
-            presenter.handlePostStatusException(ex);
+            displayErrorMessage("Failed to post status because of exception: " + ex);
         }
 
     }

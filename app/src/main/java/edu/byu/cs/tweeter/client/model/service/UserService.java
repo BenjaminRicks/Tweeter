@@ -1,136 +1,78 @@
 package edu.byu.cs.tweeter.client.model.service;
 
-import android.os.Handler;
-import android.os.Message;
-
-import androidx.annotation.NonNull;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import android.os.Bundle;
 
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.BackgroundTaskUtils;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.LoginTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.LogoutTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.RegisterTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.BackgroundTaskHandler;
+import edu.byu.cs.tweeter.client.model.service.observer.ServiceObserver;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class UserService {
+public class UserService extends ServiceBase {
 
-    public interface LoginObserver {
-        void handleLoginSuccess(User user, AuthToken authToken);
-        void handleLoginFailure(String message);
-        void handleLoginThrewException(Exception ex);
+    public interface LogoutObserver extends ServiceObserver {
+        void handleSuccess();
     }
 
-    public interface RegisterObserver {
-        void handleRegisterSuccess(User user, AuthToken authToken);
-        void handleRegisterFailure(String message);
-        void handleRegisterException(Exception ex);
+    public interface AuthenticateObserver extends ServiceObserver {
+        void handleSuccess(User user, AuthToken authToken);
     }
 
-    public interface LogoutObserver {
-        void handleLogoutSuccess();
-        void handleLogoutFailure(String message);
-        void handleLogoutException(Exception ex);
-
+    public void register(String firstName, String lastName, String alias, String password, byte[] imageBytesBase64, AuthenticateObserver observer) {
+        RegisterTask registerTask = new RegisterTask(firstName, lastName, alias, password, imageBytesBase64.toString(), new AuthenticateHandler(observer));
+        BackgroundTaskUtils.runTask(registerTask);
     }
 
-    public void register(String firstName, String lastName, String alias, String password, byte[] imageBytesBase64, RegisterObserver observer) {
-        RegisterTask registerTask = new RegisterTask(firstName, lastName, alias, password, imageBytesBase64.toString(), new RegisterHandler(observer));
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(registerTask);
-    }
-
-    public void login(String username, String password, LoginObserver observer) {
-        // Send the login request.
-        LoginTask loginTask = new LoginTask(username, password, new LoginHandler(observer));
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(loginTask);
+    public void login(String username, String password, AuthenticateObserver observer) {
+        LoginTask loginTask = new LoginTask(username, password, new AuthenticateHandler(observer));
+        BackgroundTaskUtils.runTask(loginTask);
     }
 
     public void logout(AuthToken authToken, LogoutObserver observer) {
         LogoutTask logoutTask = new LogoutTask(authToken, new LogoutHandler(observer));
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(logoutTask);
+        BackgroundTaskUtils.runTask(logoutTask);
     }
 
-    private class LoginHandler extends Handler {
-        private LoginObserver observer;
-        public LoginHandler(LoginObserver observer){
-            this.observer = observer;
+    public void getUser(AuthToken authToken, String alias, ServiceBase.GetUserObserver observer) {
+        GetUserTask userTask = new GetUserTask(authToken, alias, new UserService.GetUserHandler(observer));
+        BackgroundTaskUtils.runTask(userTask);
+    }
+
+    private class AuthenticateHandler extends BackgroundTaskHandler<AuthenticateObserver> {
+
+        public AuthenticateHandler(AuthenticateObserver observer) {
+            super(observer);
         }
+
         @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(LoginTask.SUCCESS_KEY);
-            if (success) {
-                User loggedInUser = (User) msg.getData().getSerializable(LoginTask.USER_KEY);
-                AuthToken authToken = (AuthToken) msg.getData().getSerializable(LoginTask.AUTH_TOKEN_KEY);
+        protected void handleSuccessMessage(AuthenticateObserver observer, Bundle data) {
+            User loggedInUser = (User) data.getSerializable(LoginTask.USER_KEY);
+            AuthToken authToken = (AuthToken) data.getSerializable(LoginTask.AUTH_TOKEN_KEY);
 
-                // Cache user session information
-                Cache.getInstance().setCurrUser(loggedInUser);
-                Cache.getInstance().setCurrUserAuthToken(authToken);
+            // Cache user session information
+            Cache.getInstance().setCurrUser(loggedInUser);
+            Cache.getInstance().setCurrUserAuthToken(authToken);
 
 
-                observer.handleLoginSuccess(loggedInUser, authToken);
-            } else if (msg.getData().containsKey(LoginTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(LoginTask.MESSAGE_KEY);
-                observer.handleLoginFailure(message);
-            } else if (msg.getData().containsKey(LoginTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(LoginTask.EXCEPTION_KEY);
-                observer.handleLoginThrewException(ex);
-            }
+            observer.handleSuccess(loggedInUser, authToken);
         }
     }
 
-    private class LogoutHandler extends Handler {
-        private UserService.LogoutObserver observer;
+    private class LogoutHandler extends BackgroundTaskHandler<LogoutObserver> {
 
         public LogoutHandler(LogoutObserver observer) {
-            this.observer = observer;
+            super(observer);
         }
+
         @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(LogoutTask.SUCCESS_KEY);
-            if (success) {
-                observer.handleLogoutSuccess();
-            } else if (msg.getData().containsKey(LogoutTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(LogoutTask.MESSAGE_KEY);
-                observer.handleLogoutFailure(message);
-            } else if (msg.getData().containsKey(LogoutTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(LogoutTask.EXCEPTION_KEY);
-                observer.handleLogoutException(ex);
-            }
+        protected void handleSuccessMessage(LogoutObserver observer, Bundle data) {
+            observer.handleSuccess();
         }
     }
-
-    private class RegisterHandler extends Handler {
-        private RegisterObserver observer;
-
-        public RegisterHandler(RegisterObserver observer) {
-            this.observer = observer;
-        }
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(RegisterTask.SUCCESS_KEY);
-            if (success) {
-                User registeredUser = (User) msg.getData().getSerializable(RegisterTask.USER_KEY);
-                AuthToken authToken = (AuthToken) msg.getData().getSerializable(RegisterTask.AUTH_TOKEN_KEY);
-
-                Cache.getInstance().setCurrUser(registeredUser);
-                Cache.getInstance().setCurrUserAuthToken(authToken);
-
-                observer.handleRegisterSuccess(registeredUser, authToken);
-            } else if (msg.getData().containsKey(RegisterTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(RegisterTask.MESSAGE_KEY);
-                observer.handleRegisterFailure(message);
-            } else if (msg.getData().containsKey(RegisterTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(RegisterTask.EXCEPTION_KEY);
-                observer.handleRegisterException(ex);
-            }
-        }
-    }
-
 
 }

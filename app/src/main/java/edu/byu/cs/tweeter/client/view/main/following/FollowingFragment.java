@@ -113,6 +113,11 @@ public class FollowingFragment extends Fragment implements FollowingPresenter.Fo
 
     }
 
+    @Override
+    public void displayInfoMessage(String message) {
+
+    }
+
     /**
      *
      * The ViewHolder for the RecyclerView that displays the Following data.

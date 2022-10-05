@@ -12,7 +12,7 @@ import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter implements UserService.RegisterObserver {
+public class RegisterPresenter {
 
     private RegisterView view;
     private Editable firstName;
@@ -54,7 +54,7 @@ public class RegisterPresenter implements UserService.RegisterObserver {
 
         if(errorMessage == null) {
 
-            new UserService().register(firstName, lastName, alias, password, imageBytes, this);
+            new UserService().register(firstName, lastName, alias, password, imageBytes, new RegisterObserver());
         }
         else{
             view.displayErrorMessage(errorMessage);
@@ -87,22 +87,21 @@ public class RegisterPresenter implements UserService.RegisterObserver {
         return null;
     }
 
-    @Override
-    public void handleRegisterSuccess(User user, AuthToken authToken) {
-        view.displayInfoMessage("Hello " + Cache.getInstance().getCurrUser().getName());
+    private class RegisterObserver implements UserService.AuthenticateObserver {
+        @Override
+        public void handleSuccess(User user, AuthToken authToken) {
+            view.displayInfoMessage("Hello " + Cache.getInstance().getCurrUser().getName());
+            view.navigateToUser(user);
+        }
 
-        view.navigateToUser(user);
+        @Override
+        public void handleFailure(String message) {
+            view.displayErrorMessage("Failed to register: " + message);
+        }
 
+        @Override
+        public void handleException(Exception ex) {
+            view.displayErrorMessage("Failed to register because of exception: " + ex);
+        }
     }
-
-    @Override
-    public void handleRegisterFailure(String message) {
-        view.displayErrorMessage("Failed to register: " + message);
-    }
-
-    @Override
-    public void handleRegisterException(Exception ex) {
-        view.displayErrorMessage("Failed to register because of exception: " + ex);
-    }
-
 }

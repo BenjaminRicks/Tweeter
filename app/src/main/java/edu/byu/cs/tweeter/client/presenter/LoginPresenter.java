@@ -5,14 +5,14 @@ import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class LoginPresenter implements UserService.LoginObserver {
+public class LoginPresenter extends Presenter {
 
     //The methods that the presenter can call on the view(A contract)
-    public interface LoginView {
-        void displayErrorMessage(String message);
+    public interface LoginView extends View {
+//        void displayErrorMessage(String message);
         void clearErrorMessage();
 
-        void displayInfoMessage(String message);
+//        void displayInfoMessage(String message);
         void clearInfoMessage();
 
         void navigateToUser(User user);
@@ -30,7 +30,7 @@ public class LoginPresenter implements UserService.LoginObserver {
         if(errorMessage == null) {
             view.clearErrorMessage();
             view.displayInfoMessage("Logging In...");
-            new UserService().login(username, password, this);
+            new UserService().login(username, password, new LoginObserver());
         }
         else{
             view.displayErrorMessage(errorMessage);
@@ -53,25 +53,27 @@ public class LoginPresenter implements UserService.LoginObserver {
 
     //The methods related to observing the layer below(the model layer)
 
-    @Override
-    public void handleLoginSuccess(User user, AuthToken authToken) {
-        view.clearInfoMessage();
-        view.clearErrorMessage();
 
-        view.displayInfoMessage("Hello " + Cache.getInstance().getCurrUser().getName());
-        view.navigateToUser(user);
+    private class LoginObserver implements UserService.AuthenticateObserver {
+        @Override
+        public void handleSuccess(User user, AuthToken authToken) {
+            view.clearInfoMessage();
+            view.clearErrorMessage();
+
+            view.displayInfoMessage("Hello " + Cache.getInstance().getCurrUser().getName());
+            view.navigateToUser(user);
+        }
+
+        @Override
+        public void handleFailure(String message) {
+            view.displayErrorMessage(message);
+        }
+
+        @Override
+        public void handleException(Exception ex) {
+            view.displayInfoMessage("Failed to login because of exception: " + ex.getMessage());
+
+        }
     }
-
-    @Override
-    public void handleLoginFailure(String message) {
-        view.displayErrorMessage(message);
-    }
-
-    @Override
-    public void handleLoginThrewException(Exception ex) {
-        view.displayInfoMessage("Failed to login because of exception: " + ex.getMessage());
-
-    }
-
 
 }
