@@ -1,7 +1,5 @@
 package edu.byu.cs.tweeter.client.presenter;
 
-import java.util.List;
-
 import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
@@ -17,11 +15,6 @@ public class FeedPresenter extends PagedPresenter<Status> {
         this.authToken = authToken;
     }
 
-//    @Override
-//    public void setData(List<Status> statuses) {
-//        lastItem = (statuses.size() > 0) ? statuses.get(statuses.size() - 1) : null;
-//        setHasMorePages(hasMorePages);
-//    }
 
     public void getItems(AuthToken authToken, User targetUser, int limit, Status lastItem) {
         getService().getFeed(authToken, targetUser, limit, lastItem, new PagedObserver());

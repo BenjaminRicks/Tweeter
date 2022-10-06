@@ -7,6 +7,7 @@ import android.widget.ImageView;
 
 import java.io.ByteArrayOutputStream;
 import edu.byu.cs.tweeter.client.model.service.UserService;
+import edu.byu.cs.tweeter.model.domain.User;
 
 public class RegisterPresenter extends AuthenticatePresenter {
 
@@ -39,7 +40,7 @@ public class RegisterPresenter extends AuthenticatePresenter {
         byte[] imageBytes = bos.toByteArray();
 
         if(errorMessage == null) {
-            new UserService().register(firstName, lastName, alias, password, imageBytes, new AuthenticateObserver());
+            getService().register(firstName, lastName, alias, password, imageBytes, new AuthenticateObserver());
         }
         else{
             view.displayErrorMessage(errorMessage);

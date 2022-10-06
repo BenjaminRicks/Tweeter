@@ -17,7 +17,7 @@ public class LoginPresenter extends AuthenticatePresenter {
         if(errorMessage == null) {
             view.clearErrorMessage();
             view.displayInfoMessage("Logging In...");
-            new UserService().login(username, password, new AuthenticateObserver());
+            getService().login(username, password, new AuthenticateObserver());
         }
         else{
             view.displayErrorMessage(errorMessage);

@@ -1,6 +1,7 @@
 package edu.byu.cs.tweeter.client.presenter;
 
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -45,9 +46,6 @@ public class AuthenticatePresenter extends Presenter {
         return null;
     }
 
-    //The methods related to observing the layer below(the model layer)
-
-
     protected class AuthenticateObserver implements UserService.AuthenticateObserver {
         @Override
         public void handleSuccess(User user, AuthToken authToken) {
@@ -66,8 +64,12 @@ public class AuthenticatePresenter extends Presenter {
         @Override
         public void handleException(Exception ex) {
             view.displayInfoMessage("Failed to login because of exception: " + ex.getMessage());
-
         }
+
+    }
+
+    public UserService getService() {
+        return new UserService();
     }
 
 }

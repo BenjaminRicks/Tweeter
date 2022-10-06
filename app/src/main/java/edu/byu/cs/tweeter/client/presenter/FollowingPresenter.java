@@ -1,46 +1,10 @@
 package edu.byu.cs.tweeter.client.presenter;
 
-import java.util.List;
-
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowingPresenter extends PagedPresenter<User> {
-
-//    private class FollowingObserver implements FollowService.FollowsObserver {
-//
-//        @Override
-//        public void handleSuccess(List<User> followPeople, boolean hasMorePages) {
-//            setData(followPeople);
-//
-//            view.setLoading(false);
-//            view.addItems(followPeople);
-//            setLoading(false);
-//        }
-//
-//        @Override
-//        public void handleFailure(String message) {
-//            view.setLoading(false);
-//            displayFailMessage(message);
-//            setLoading(false);
-//
-//        }
-//
-//        @Override
-//        public void handleException(Exception ex) {
-//            view.setLoading(false);
-//            displayErrorMessage(ex);
-//            setLoading(false);
-//        }
-//    }
-//
-//    public void setData(List<User> followees) {
-//        lastItem = (followees.size() > 0) ? followees.get(followees.size() - 1) : null;
-//        setHasMorePages(hasMorePages);
-//    }
-
-
 
     public interface FollowingView extends PagedView<User>{}
 

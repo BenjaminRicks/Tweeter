@@ -12,9 +12,26 @@ public class MainPresenter {
 
     MainView view;
 
-
     public MainPresenter(MainView view) {
         this.view = view;
+    }
+
+    public interface MainView extends View {
+        void cancelPostToast();
+        void setPostToast(String message);
+
+        void updateFollowButton(boolean removed);
+        void updateSelectedUserFollowingAndFollowers();
+        void enableFollowButton(boolean enable);
+
+        void setFolloweeCount(int count);
+        void setFollowerCount(int count);
+
+        void cancelLogOutToast();
+        void logoutUser();
+        void setLogOutToast(String message);
+
+        void updateFollowerFollowButton(boolean isFollower);
     }
 
     private class FollowObserver implements FollowService.FollowObserver {
@@ -107,26 +124,6 @@ public class MainPresenter {
         }
     }
 
-    public interface MainView extends View {
-        void cancelPostToast();
-        void setPostToast(String message);
-
-        void updateFollowButton(boolean removed);
-        void updateSelectedUserFollowingAndFollowers();
-        void enableFollowButton(boolean enable);
-
-        void setFolloweeCount(int count);
-        void setFollowerCount(int count);
-
-        void cancelLogOutToast();
-        void logoutUser();
-        void setLogOutToast(String message);
-
-        void updateFollowerFollowButton(boolean isFollower);
-
-
-    }
-
     private class PostStatusObserver implements StatusService.PostStatusObserver {
 
         @Override
@@ -151,40 +148,48 @@ public class MainPresenter {
 
     public void unfollow(AuthToken authToken, User user) {
         view.enableFollowButton(false);
-        new FollowService().unfollow(authToken, user, new FollowObserver());
+        getFollowService().unfollow(authToken, user, new FollowObserver());
         view.displayInfoMessage("Removing " + user.getName() + "...");
     }
 
     public void follow(AuthToken authToken, User user) {
         view.enableFollowButton(false);
-        new FollowService().follow(authToken, user, new FollowObserver());
+        getFollowService().follow(authToken, user, new FollowObserver());
         view.displayInfoMessage("Adding " + user.getName() + "...");
     }
 
     public void getPostStatus(AuthToken authToken, Status status) {
         view.setPostToast("Posting status...");
-        getPostStatusService().getPostStatus(authToken, status, new PostStatusObserver());
+        getStatusService().getPostStatus(authToken, status, new PostStatusObserver());
     }
 
     public void logout(AuthToken authToken) {
         view.setLogOutToast("Logging out...");
-        new UserService().logout(authToken, new LogoutObserver());
-    }
-
-    public StatusService getPostStatusService() {
-        return new StatusService();
+        getUserService().logout(authToken, new LogoutObserver());
     }
 
     public void getFollowersCount(AuthToken authToken, User user) {
-        new FollowService().getFollowersCount(authToken, user, new CountObserver());
+        getFollowService().getFollowersCount(authToken, user, new CountObserver());
     }
 
     public void getFollowingCount(AuthToken authToken, User user) {
-        new FollowService().getFollowingCount(authToken, user, new CountObserver());
+        getFollowService().getFollowingCount(authToken, user, new CountObserver());
     }
 
     public void isFollower(AuthToken authToken, User user, User selectedUser) {
-        new FollowService().isFollower(authToken, user, selectedUser, new IsFollowerObserver());
+        getFollowService().isFollower(authToken, user, selectedUser, new IsFollowerObserver());
+    }
+
+    public FollowService getFollowService() {
+        return new FollowService();
+    }
+
+    public StatusService getStatusService() {
+        return new StatusService();
+    }
+
+    public UserService getUserService() {
+        return new UserService();
     }
 
 
