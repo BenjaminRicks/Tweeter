@@ -6,15 +6,10 @@ import android.text.Editable;
 import android.widget.ImageView;
 
 import java.io.ByteArrayOutputStream;
-
-import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.UserService;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter {
+public class RegisterPresenter extends AuthenticatePresenter {
 
-    private RegisterView view;
     private Editable firstName;
     private Editable lastName;
     private Editable alias;
@@ -22,23 +17,14 @@ public class RegisterPresenter {
     private ImageView imageToUpload;
 
     public RegisterPresenter(RegisterView view, Editable firstName, Editable lastName, Editable alias, Editable password, ImageView imageToUpload) {
-        this.view = view;
+        super(view);
         this.firstName = firstName;
         this.lastName = lastName;
         this.alias = alias;
         this.password = password;
         this.imageToUpload = imageToUpload;
     }
-    public interface RegisterView {
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
-        void setRegisteringToast();
-
-        void navigateToUser(User user);
-    }
+    public interface RegisterView extends AuthenticateView {}
 
     public void register(String firstName, String lastName, String alias, String password, ImageView imageToUpload){
 
@@ -53,8 +39,7 @@ public class RegisterPresenter {
         byte[] imageBytes = bos.toByteArray();
 
         if(errorMessage == null) {
-
-            new UserService().register(firstName, lastName, alias, password, imageBytes, new RegisterObserver());
+            new UserService().register(firstName, lastName, alias, password, imageBytes, new AuthenticateObserver());
         }
         else{
             view.displayErrorMessage(errorMessage);
@@ -87,21 +72,4 @@ public class RegisterPresenter {
         return null;
     }
 
-    private class RegisterObserver implements UserService.AuthenticateObserver {
-        @Override
-        public void handleSuccess(User user, AuthToken authToken) {
-            view.displayInfoMessage("Hello " + Cache.getInstance().getCurrUser().getName());
-            view.navigateToUser(user);
-        }
-
-        @Override
-        public void handleFailure(String message) {
-            view.displayErrorMessage("Failed to register: " + message);
-        }
-
-        @Override
-        public void handleException(Exception ex) {
-            view.displayErrorMessage("Failed to register because of exception: " + ex);
-        }
-    }
 }
